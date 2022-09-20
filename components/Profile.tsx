@@ -1,16 +1,27 @@
+import Link from "next/link";
+import React, { useEffect, useState } from "react";
 
-import { profile } from "console";
-import app from "next/app";
-import { useEffect } from "react";
+interface User {
+  id: string;
+}
 
-export default function Profile(user: unknown) {
-  useEffect(()=> {
-    require('@passageidentity/passage-elements/passage-profile');
-  }, []);
+type Props = {
+  appId: string;
+}
+
+export default function Profile({ appId }: Props) {
+  // const [isLoaded, setIsLoaded] = useState(false)
+
+  // useEffect(() => {
+  //   if (!isLoaded) require('@passageidentity/passage-elements/passage-profile');
+
+  //   setIsLoaded(true)
+  // }, [isLoaded]);
+
 
   return (
-    <>
-      <passage-profile app-id={appID}></passage-profile>
-    </>
-  );'
+    <div>
+      <passage-profile app-id={appId}></passage-profile>
+    </div>
+  );
 }
