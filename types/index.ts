@@ -13,7 +13,7 @@ export interface Country {
 export interface Make {
   id: string;
   name: string;
-  country: Country;
+  countries: Country;
 }
 
 export interface Car {
