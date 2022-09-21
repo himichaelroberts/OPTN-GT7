@@ -50,7 +50,7 @@ const IndexPage = ({ cars, countries, makes, query }: Props) => {
   let carList = cars.map((car, index) => {
     return (
       <Grid xs="auto" key={index}>
-        <CarCard name={car.name} make={car.makers.name} country={car.makers.country.name} />
+        <CarCard name={car.name} make={car.makers.name} country={car.makers.countries.name} />
       </Grid>
     )
   })
