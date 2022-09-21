@@ -1,10 +1,14 @@
 import jwtDecode, { JwtPayload } from 'jwt-decode';
 import jwt from "jsonwebtoken";
 import jwkToPem, { RSA } from "jwk-to-pem";
-import { GetServerSideProps, NextApiRequest, NextApiResponse } from 'next';
-import { getCookie } from 'cookies-next'
-import { env } from 'process';
-import error from 'next/error';
+import { GetServerSidePropsContext } from 'next';
+import { getCookie } from 'cookies-next';
+
+interface authResult {
+  redirect_url: string;
+  auth_token: string;
+  refresh_token?: string;
+}
 
 interface JwtHeader {
   alg: string;
@@ -33,12 +37,12 @@ export interface JWK {
 
 const AUTH_CACHE: AUTHCACHE = {};
 
-export const getPassageUserId = async ({ req, res }: { req: NextApiRequest, res: NextApiResponse }) => {
+export const getPassageUserId = async (ctx: GetServerSidePropsContext) => {
   if (!process.env.NEXT_PUBLIC_PASSAGE_APP_ID) {
     return undefined;
   }
 
-  const authToken = getCookie('psg_auth_token', { req, res }) as string;
+  const authToken = getCookie('psg_auth_token', { req: ctx.req, res: ctx.res }) as string;
 
   if (!authToken) {
     return null
@@ -157,3 +161,32 @@ async function _findJWK(appId: string, kid: string): Promise<JWK | undefined> {
     return undefined
   }
 }
+
+
+async function refresh(appId: string, refreshToken: string): Promise<string> {
+  const err = new Error("Login Required");
+
+  return fetch(`https://auth.passage.id/v1//tokens/`, {
+    method: 'POST',
+    body: JSON.stringify({ refresh_token: refreshToken }),
+  })
+    .then((response) => response.json())
+    .then((response: { auth_result: authResult }) => {
+      console.log(auth_result);
+        // authTokenHelper.setRefreshToken(response.auth_result.refresh_token);
+
+//         const authToken = response.auth_result.auth_token;
+//         if (this._useLocalStorage) {
+//             authTokenHelper.setAuthToken(authToken);
+//         } else {
+//             this.authToken = authToken;
+//         }
+
+//         return authToken;
+      return 'string'
+    })
+    .catch(() => {
+        throw err;
+    });
+}
+

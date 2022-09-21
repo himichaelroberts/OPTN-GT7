@@ -13,14 +13,12 @@ const darkTheme = createTheme({
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    // <PassageProvider>
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <UserLayout title="OPTN GT7">
         <Component {...pageProps} />
       </UserLayout>
     </ThemeProvider>
-    // </PassageProvider>
   )
 }
 

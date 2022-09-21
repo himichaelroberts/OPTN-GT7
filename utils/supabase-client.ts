@@ -1,4 +1,6 @@
+import { GetServerSidePropsContext } from 'next';
 import { Car, Wishlist } from '../types';
+import { getPassageUserId } from './passage';
 import { getSupabase } from './supabase';
 
 export const getCarList = async (): Promise<
@@ -17,9 +19,13 @@ export const getCarList = async (): Promise<
   return data || [];
 };
 
-export const getWishLists = async (userId: string): Promise<
+export const getWishLists = async (ctx: GetServerSidePropsContext): Promise<
   Wishlist[]
 > => {
+  const userId = await getPassageUserId(ctx);
+
+  if (!userId) throw new Error("user not found")
+
   const supabase = getSupabase(userId)
 
   const { data, error } = await supabase

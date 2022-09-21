@@ -1,23 +1,15 @@
-import { GetServerSideProps } from 'next';
-import { getPassageUserId } from '../utils/passage'
-import { getCarList } from '../utils/supabase-client';
 import { Car } from '../types';
-import { UserProvider, useUser } from '../utils/useUser';
-import { useEffect } from 'react'
+import { getCarList } from '../utils/supabase-client';
+import withPageAuth from '../utils/withPageAuth';
 
 type Props = {
   cars: Car[]
 }
 
 const IndexPage = ({ cars }: Props) => {
-  const { user } = useUser();
-
-  useEffect(() => {
-    console.log('user', user);
-  }, [user])
-
   return (
     <>
+      <h1>CarList </h1>
       <pre>
         {JSON.stringify(cars, null, 2)}
       </pre>
@@ -25,17 +17,17 @@ const IndexPage = ({ cars }: Props) => {
   )
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
-  // const userId = await getPassageUserId({ req, res });
+export const getServerSideProps = withPageAuth({
+  redirectTo: '/login',
+  async getServerSideProps(ctx) {
+    const carList = await getCarList();
 
-  const carList = await getCarList();
-
-  return {
-    props: {
-      cars: carList,
-      appId: process.env.NEXT_PUBLIC_PASSAGE_APP_ID
-    },
+    return {
+      props: {
+        cars: carList,
+      }
+    }
   }
-}
+});
 
 export default IndexPage

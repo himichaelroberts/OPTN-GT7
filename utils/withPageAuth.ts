@@ -2,15 +2,16 @@ import { GetServerSideProps, GetServerSidePropsContext } from 'next';
 import {
   AccessTokenNotFound,
   AuthHelperError,
-  CookieNotParsed,
   CookieOptions,
-  COOKIE_OPTIONS,
   jwtDecoder,
   JWTPayloadFailed,
   TOKEN_REFRESH_MARGIN
 } from '@supabase/auth-helpers-shared';
+import { getCookie } from 'cookies-next'
+import { authGuard } from './passage';
+import { time } from 'console';
+// import { PassageUser } from '@passageidentity/passage-elements/passage-user';
 import getUser from './getUser';
-import logger from './log';
 
 /**
  * ## Protecting Pages with Server Side Rendering (SSR)
@@ -68,50 +69,40 @@ export default function withPageAuth({
 } = {}) {
   return async (context: GetServerSidePropsContext) => {
     try {
-      if (!context.req.cookies) {
-        throw new CookieNotParsed();
-      }
-      cookieOptions = { ...COOKIE_OPTIONS, ...cookieOptions };
-      const access_token =
-        context.req.cookies[`${cookieOptions.name}-access-token`];
-      if (!access_token) {
-        throw new AccessTokenNotFound();
+      const authToken = getCookie('psg_auth_token', { req: context.req, res: context.res }) as string;
+
+      if (!authToken) throw new AccessTokenNotFound();
+
+      const response = await getUser(context, { cookieOptions, forceRefresh: true });
+      console.log(response)
+
+      return {
+        props: {}
       }
 
+      if (!authGuard(authToken)) throw new AccessTokenNotFound();
+
+
       let user, accessToken;
+
       // Get payload from cached access token.
-      const jwtUser = jwtDecoder(access_token);
+      const jwtUser = jwtDecoder(authToken);
       if (!jwtUser?.exp) {
         throw new JWTPayloadFailed();
       }
+
       const timeNow = Math.round(Date.now() / 1000);
+
+      console.log('jwt exp', jwtUser.exp);
+      console.log('timeNow', timeNow)
       if (jwtUser.exp < timeNow + tokenRefreshMargin) {
-        // JWT is expired, let's refresh from Gotrue
-        const response = await getUser(context, { cookieOptions });
-        user = response.user;
-        accessToken = response.accessToken;
+        console.log('Lets go get a new token')
       } else {
-        // Transform JWT and add note that it ise cached from JWT.
         user = {
-          id: jwtUser.sub,
-          aud: null,
-          role: null,
-          email: null,
-          email_confirmed_at: null,
-          phone: null,
-          confirmed_at: null,
-          last_sign_in_at: null,
-          app_metadata: {},
-          user_metadata: {},
-          identities: [],
-          created_at: null,
-          updated_at: null,
-          'supabase-auth-helpers-note':
-            'This user payload is retrieved from the cached JWT and might be stale. If you need up to date user data, please call the `getUser` method in a server-side context!'
-        };
-        const mergedUser = { ...user, ...jwtUser };
-        user = mergedUser;
-        accessToken = access_token;
+          id: jwtUser.sub
+        }
+
+        accessToken = authToken;
       }
 
       if (!user) {
@@ -130,9 +121,10 @@ export default function withPageAuth({
           };
         }
       }
+
       return {
         ...ret,
-        props: { ...ret.props, user: user, accessToken: accessToken }
+        props: { ...ret.props }
       };
     } catch (e) {
       if (authRequired) {
@@ -146,9 +138,9 @@ export default function withPageAuth({
 
       let props = { user: null, accessToken: null, error: '' };
       if (e instanceof AuthHelperError) {
-        logger.debug(e.toObj());
+        console.debug(e.toObj());
       } else {
-        logger.debug(String(e));
+        console.debug(String(e));
         props.error = String(e);
       }
 
