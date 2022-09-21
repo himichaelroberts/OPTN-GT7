@@ -11,7 +11,7 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import Link from 'next/link';
-import Image from 'next/Image';
+import Image from 'next/image';
 
 import BackgroundLetterAvatar from '../components/BackgroundLetterAvatar';
 
@@ -33,7 +33,7 @@ const settings = [
 
 type Props = {
   username?: string;
-  logout: unknown;
+  logout?: () => Promise<void>;
 }
 
 
@@ -56,10 +56,9 @@ const NavBar = ({ username, logout }: Props) => {
     setAnchorElUser(null);
   };
 
-  const handleLogout = (e) => {
-    e.preventDefault();
+  const handleLogout = () => {
     handleCloseUserMenu()
-    logout();
+    if (logout) logout();
   }
 
   return (

@@ -1,21 +1,24 @@
-import React, { ReactNode, useEffect, useState } from 'react'
+import React, { ReactNode } from 'react'
 import Head from 'next/head'
 import Router from 'next/router'
 import NavBar from '../components/NavBar';
 import { deleteCookie } from 'cookies-next';
 
 import { Container, Box } from '@mui/material';
-import Grid from '@mui/material/Unstable_Grid2';
+
+import { User } from '../types';
 
 type Props = {
   children?: ReactNode
   title?: string
+  user?: User;
 }
 
-const UserLayout = ({ children, title = 'This is the default title' }: Props) => {
+const UserLayout = ({ children, title, user }: Props) => {
   const handleLogout = async () => {
     deleteCookie('psg_refresh_token');
 
+    // @ts-ignore
     const passageUser = new window.Passage.PassageUser()
     await passageUser.signOut()
 
@@ -32,8 +35,8 @@ const UserLayout = ({ children, title = 'This is the default title' }: Props) =>
       <main>
         <Box sx={{ flexGrow: 1 }}>
           <header>
-            {children.props.user ?
-              <NavBar username={children.props.user?.user_metadata?.username} logout={handleLogout} />
+            {user ?
+              <NavBar username={user?.user_metadata?.username} logout={handleLogout} />
               :
               <NavBar />
             }

@@ -13,10 +13,10 @@ type CarCardProps = {
 export default function CarCard({ name, make, country }: CarCardProps) {
   const img_url = encodeURI(`${make} ${name}`);
 
-  const handleImageError = (e: unknown) => {
-    e.target.onerror = null;
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.onerror = null;
     // e.target.style.display = 'none'
-    e.target.src = "https://picsum.photos/345/140"
+    e.currentTarget.src = "https://picsum.photos/345/140"
   }
 
   return (

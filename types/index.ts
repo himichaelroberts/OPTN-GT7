@@ -1,5 +1,8 @@
 export interface User {
   id: string;
+  user_metadata: {
+    username: string;
+  }
 }
 
 export interface Country {
@@ -10,7 +13,7 @@ export interface Country {
 export interface Make {
   id: string;
   name: string;
-  country_id: Country;
+  country: Country;
 }
 
 export interface Car {

@@ -24,7 +24,9 @@ type Props = {
 const IndexPage = ({ cars, countries, makes, query }: Props) => {
   const [selectedCountryMake, setSelectedCountryMake] = useQueryStates(
     {
+      // @ts-ignore
       country: queryTypes.string.withDefault(query?.country),
+      // @ts-ignore
       make: queryTypes.string.withDefault(query?.make)
     },
     {
@@ -46,10 +48,9 @@ const IndexPage = ({ cars, countries, makes, query }: Props) => {
   }
 
   let carList = cars.map((car, index) => {
-    console.log('car', car);
     return (
       <Grid xs="auto" key={index}>
-        <CarCard name={car.name} make={car.makers.name} />
+        <CarCard name={car.name} make={car.makers.name} country={car.makers.country.name} />
       </Grid>
     )
   })
