@@ -7,7 +7,8 @@ import { getCookie } from 'cookies-next';
 interface authResult {
   redirect_url: string;
   auth_token: string;
-  refresh_token?: string;
+  refresh_token: string;
+  refresh_token_expiration: number;
 }
 
 interface JwtHeader {
@@ -162,30 +163,19 @@ async function _findJWK(appId: string, kid: string): Promise<JWK | undefined> {
   }
 }
 
-
-async function refresh(appId: string, refreshToken: string): Promise<string> {
+export async function refreshAuthToken(url: string, refreshToken: string): Promise<authResult> {
   const err = new Error("Login Required");
 
-  return fetch(`https://auth.passage.id/v1//tokens/`, {
+  return fetch(`${url}/tokens/`, {
     method: 'POST',
     body: JSON.stringify({ refresh_token: refreshToken }),
   })
     .then((response) => response.json())
     .then((response: { auth_result: authResult }) => {
-      console.log(auth_result);
-        // authTokenHelper.setRefreshToken(response.auth_result.refresh_token);
-
-//         const authToken = response.auth_result.auth_token;
-//         if (this._useLocalStorage) {
-//             authTokenHelper.setAuthToken(authToken);
-//         } else {
-//             this.authToken = authToken;
-//         }
-
-//         return authToken;
-      return 'string'
+      return response.auth_result;
     })
-    .catch(() => {
+    .catch((e) => {
+      console.log(e);
         throw err;
     });
 }

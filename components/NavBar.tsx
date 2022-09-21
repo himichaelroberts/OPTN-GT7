@@ -7,17 +7,14 @@ import Typography from '@mui/material/Typography';
 import Menu from '@mui/material/Menu';
 import MenuIcon from '@mui/icons-material/Menu';
 import Container from '@mui/material/Container';
-import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-import AdbIcon from '@mui/icons-material/Adb';
 import Link from 'next/link';
 import Image from 'next/Image';
 
 import BackgroundLetterAvatar from '../components/BackgroundLetterAvatar';
 
-import { User } from '../types';
 
 const pages = [
   {
@@ -69,7 +66,8 @@ const NavBar = ({ username, logout }: Props) => {
     <AppBar position="static">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <Box sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }}>
+          {/* Desktop Logo */}
+          <Box sx={{ display: { xs: 'none', sm: 'flex' }, mr: 1 }}>
             <Link href="/" passHref>
               <a>
                 <Image alt="OPTN GT7" src="/optn_logo.png" height={40} width="100%" />
@@ -77,8 +75,9 @@ const NavBar = ({ username, logout }: Props) => {
             </Link>
           </Box>
 
+          {/* Mobile Pages  */}
           {username &&
-            <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
+            <Box sx={{ flexGrow: 1, display: { xs: 'flex', sm: 'none' } }}>
               <IconButton
                 size="large"
                 aria-label="account of current user"
@@ -122,7 +121,8 @@ const NavBar = ({ username, logout }: Props) => {
             </Box>
           }
 
-          <Box sx={{ display: { xs: 'flex', md: 'none' }, mr: 2, flexGrow: 1 }}>
+          {/* Mobile Logo */}
+          <Box sx={{ display: { xs: 'flex', sm: 'none' }, mr: 2, flexGrow: 1 }}>
             <Link href="/" passHref>
               <a>
                 <Image alt="OPTN GT7" src="/optn_logo.png" width="100%" height="40px" />
@@ -130,8 +130,9 @@ const NavBar = ({ username, logout }: Props) => {
             </Link>
           </Box>
 
+          {/* Desktop Pages */}
           {username &&
-            <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+            <Box sx={{ flexGrow: 1, display: { xs: 'none', sm: 'flex' } }}>
               {pages.map((page) => (
                 <Link key={page.name} href={page.path} passHref>
                   <Button
@@ -145,6 +146,7 @@ const NavBar = ({ username, logout }: Props) => {
             </Box>
           }
 
+          {/* Settings */}
           {username &&
             <Box sx={{ flexGrow: 0 }}>
               <Tooltip title="Open settings">

@@ -3,23 +3,18 @@ import { GetServerSidePropsContext, NextApiRequest, NextApiResponse } from "next
 import {
   ApiError,
   CookieOptions,
-  setCookies,
-  COOKIE_OPTIONS,
   TOKEN_REFRESH_MARGIN,
-  NextRequestAdapter,
-  NextResponseAdapter,
   jwtDecoder,
   JWTPayloadFailed,
   AccessTokenNotFound,
   RefreshTokenNotFound,
   AuthHelperError,
-  CookieNotFound,
   ErrorPayload
 } from '@supabase/auth-helpers-shared';
 
-import { getCookie } from 'cookies-next'
+import { getCookie, setCookie } from 'cookies-next'
 import { User } from "../types";
-import { authGuard } from "./passage";
+import { refreshAuthToken } from "./passage";
 
 interface ResponsePayload {
   user: User | null;
@@ -33,6 +28,20 @@ export interface GetUserOptions {
   tokenRefreshMargin?: number;
 }
 
+async function getCurrentUser(accessToken: string): Promise<User> {
+  const jwtUser = jwtDecoder(accessToken);
+
+  return fetch(`${jwtUser.iss}/currentuser/`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    }
+  })
+    .then((response) => response.json())
+    .then((response) => {
+      return response.user;
+    })
+}
 
 export default async function getUser(
   context:
@@ -45,37 +54,48 @@ export default async function getUser(
     const accessToken = getCookie('psg_auth_token', { req: context.req, res: context.res }) as string;
     const refreshToken = getCookie('psg_refresh_token', { req: context.req, res: context.res }) as string;
 
-    console.log('refreshToken', refreshToken)
-
     if (!accessToken) throw new AccessTokenNotFound();
-
-    // if (!authGuard(accessToken)) throw new AccessTokenNotFound();
 
     // Get payload from access token.
     const jwtUser = jwtDecoder(accessToken);
     if (!jwtUser?.exp) throw new JWTPayloadFailed();
+    if (!jwtUser?.iss) throw new JWTPayloadFailed();
 
     const timeNow = Math.round(Date.now() / 1000);
 
-
-    console.log('foo')
-
     if (options.forceRefresh || jwtUser.exp < timeNow + tokenRefreshMargin) {
-      // JWT is expired, let's refresh from Gotrue
-
-      console.log('hmmm', refreshToken)
+      // JWT is expired, let's refresh JWT
       if (!refreshToken) throw new RefreshTokenNotFound();
 
       console.info('Refreshing access token...');
 
-      // const { data, error } = await supabase.auth.api.refreshAccessToken(
-      //   refresh_token
-      // );
-    }
+      const data = await refreshAuthToken(jwtUser.iss, refreshToken)
 
-    return {
-      user: null,
-      accessToken: null,
+      setCookie('psg_auth_token', data.auth_token, {
+        req: context.req,
+        res: context.res,
+      });
+
+      setCookie('psg_refresh_token', data.refresh_token, {
+        req: context.req,
+        res: context.res,
+        expires: new Date(data.refresh_token_expiration * 1000)
+      });
+
+      const user = await getCurrentUser(data.auth_token);
+
+      return {
+        user,
+        accessToken: data.auth_token,
+      }
+    } else {
+      console.info('Getting the user object from Passage...');
+
+      const user = await getCurrentUser(accessToken);
+
+      // TODO: Handle Failed to getCurrentUser
+
+      return { user, accessToken}
     }
 
   } catch(e) {

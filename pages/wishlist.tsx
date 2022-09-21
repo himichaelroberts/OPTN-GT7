@@ -1,11 +1,9 @@
-import { GetServerSideProps, GetServerSidePropsContext } from 'next';
+import { GetServerSidePropsContext } from 'next';
 
 import { Wishlist } from '../types';
 import { getWishLists } from '../utils/supabase-client';
-import { getPassageUserId } from '../utils/passage'
 import withPageAuth from '../utils/withPageAuth';
-
-// import { passageClient } from '../passage/nextjs';
+import getUser from '../utils/getUser';
 
 type Props = {
   wishLists: Wishlist[]
@@ -26,10 +24,12 @@ function Wishlist({ wishLists }: Props) {
 export const getServerSideProps = withPageAuth({
   redirectTo: '/login',
   async getServerSideProps(ctx: GetServerSidePropsContext) {
+    const { user } = await getUser(ctx);
     const wishLists = await getWishLists(ctx);
 
     return {
       props: {
+        user,
         wishLists,
       }
     }

@@ -3,8 +3,6 @@ import CssBaseline from '@mui/material/CssBaseline';
 import type { AppProps } from 'next/app'
 import UserLayout from '../layouts/UserLayout';
 
-import { PassageProvider } from '../passage/react';
-
 const darkTheme = createTheme({
   palette: {
     mode: 'light',
