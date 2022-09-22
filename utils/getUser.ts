@@ -89,7 +89,7 @@ export default async function getUser(
         accessToken: data.auth_token,
       }
     } else {
-      console.info('Getting the user object from Passage...');
+      // console.info('Getting the user object from Passage...');
 
       const user = await getCurrentUser(accessToken);
 

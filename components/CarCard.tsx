@@ -3,6 +3,9 @@ import Card from '@mui/material/Card';
 import CardMedia from '@mui/material/CardMedia';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
+import CardActionArea from '@mui/material/CardActionArea';
+
+import Link from 'next/link';
 
 type CarCardProps = {
   make: string;
@@ -21,20 +24,23 @@ export default function CarCard({ name, make, country }: CarCardProps) {
 
   return (
     <Card sx={{ maxWidth: 345 }}>
-      <CardMedia
-        component="img"
-        height="175"
-        image={`https://jwwfejqbidkztahfvrlv.supabase.co/storage/v1/object/public/cars/${img_url}.webp`}
-        alt={`${make} ${name}`}
-        onError={handleImageError}
-      />
-      <CardContent>
-        <Typography gutterBottom variant="subtitle1" component="div">
-          {make} {name}
-        </Typography>
+      <Link href={img_url} passHref>
+        <>
+          <CardMedia
+            component="img"
+            height="175"
+            image={`https://jwwfejqbidkztahfvrlv.supabase.co/storage/v1/object/public/cars/${img_url}.webp`}
+            alt={`${make} ${name}`}
+            onError={handleImageError}
+          />
+          <CardContent>
+            <Typography gutterBottom variant="subtitle1" component="div">
+              {make} {name}
+            </Typography>
 
-      </CardContent>
-
+          </CardContent>
+        </>
+      </Link>
 
     </Card>
   )

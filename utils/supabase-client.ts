@@ -36,6 +36,7 @@ export const getMakes = async (country?: string | string[]): Promise<
         name
       )
     `)
+    .order('name', { ascending: true })
 
   if (country) {
     query = query.filter('countries.name', 'eq', country)
@@ -84,6 +85,9 @@ export const getCarList = async ( {country, make } : GetCarListProps): Promise<
   if (country) {
     query = query.filter('makers.countries.name', 'eq', country)
   }
+
+  // query = query.order('name', { ascending: true })
+  query = query.order('name', { foreignTable: 'makers', ascending: true })
 
   const { data, error } = await query;
 

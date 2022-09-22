@@ -17,21 +17,7 @@ type CustomAppProps = {
   Component: NextComponentType;
 }
 
-// type CustomAppProps = Component: NextComponentType & {
-// AppProps
-// }
-
-// type CustomAppProps = AppProps & {
-// Component: NextComponentType & {user?: User} // add auth type
-// }
-
-// interface CustomAppProps<P = CustomPageProps> extends AppProps<P> {
-//   pageProps: CustomPageProps
-//   Component: any;
-// }
-
 function MyApp({ Component, pageProps }: CustomAppProps) {
-  console.log(pageProps)
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />

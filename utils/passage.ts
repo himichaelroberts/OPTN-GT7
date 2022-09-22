@@ -175,8 +175,8 @@ export async function refreshAuthToken(url: string, refreshToken: string): Promi
       return response.auth_result;
     })
     .catch((e) => {
-      console.log(e);
-        throw err;
+      console.error(e);
+      throw err;
     });
 }
 
