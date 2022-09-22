@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
-import { useQueryState, queryTypes, useQueryStates } from 'next-usequerystate'
+import { queryTypes, useQueryStates } from 'next-usequerystate'
 
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Unstable_Grid2';
+import Confetti from 'react-confetti'
 
 
-import { Car, Country, Make } from '../types';
-import { getCarList, getCountries, getMakes } from '../utils/supabase-client';
+import { Car, Country, FavoriteCar, Make } from '../types';
+import { getCarList, getCountries, getMakes, getFavoriteCars } from '../utils/supabase-client';
 import withPageAuth from '../utils/withPageAuth';
 import getUser from '../utils/getUser';
 import { ParsedUrlQuery } from 'querystring';
@@ -19,9 +20,13 @@ type Props = {
   countries: Country[],
   makes: Make[],
   query: ParsedUrlQuery,
+  favorites: FavoriteCar[],
 }
 
-const IndexPage = ({ cars, countries, makes, query }: Props) => {
+const IndexPage = ({ cars, countries, makes, query, favorites }: Props) => {
+  const [localFavorites, setLocalFavorites] = useState(favorites);
+  const [showConfetti, setShowConfetti] = useState(false);
+
   const [selectedCountryMake, setSelectedCountryMake] = useQueryStates(
     {
       // @ts-ignore
@@ -47,16 +52,55 @@ const IndexPage = ({ cars, countries, makes, query }: Props) => {
     })
   }
 
-  let carList = cars.map((car, index) => {
+  const isCarFavorited = (carName: string): boolean => {
+    const found = localFavorites.find(favorite => favorite.cars.name === carName)
+
+    if (found) return true
+    return false;
+  }
+
+  const runConfetti = () => {
+    setShowConfetti(true);
+
+    setTimeout(function () {
+      setShowConfetti(false);
+    }, 4800);
+  }
+
+  const handleFavoriteAction = ((favorited: boolean, carId: string) => {
+    fetch('/api/favorite', {
+      method: favorited ? 'DELETE' : 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ car_id: carId }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setLocalFavorites(data)
+        if (!favorited) runConfetti();
+      })
+  })
+
+  const carList = cars.map((car, index) => {
+    const favorited = isCarFavorited(car.name)
     return (
       <Grid xs="auto" key={index}>
-        <CarCard name={car.name} make={car.makers.name} country={car.makers.countries.name} />
+        <CarCard car={car} favorited={favorited} handleFavoriteAction={handleFavoriteAction} />
       </Grid>
     )
-  })
+  });
 
   return (
     <>
+      {showConfetti &&
+        <Confetti
+          width={2800}
+          height={2000}
+          numberOfPieces={800}
+        />
+      }
+
       <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 1, lg: 2 }}>
         <Grid xs="auto">
           <Autocomplete
@@ -103,6 +147,7 @@ export const getServerSideProps = withPageAuth({
     const makes = await getMakes(ctx.query?.country);
     const { user } = await getUser(ctx);
     const carList = await getCarList({ country: ctx.query?.country, make: ctx.query?.make });
+    const favorites = await getFavoriteCars(ctx);
 
     return {
       props: {
@@ -111,6 +156,7 @@ export const getServerSideProps = withPageAuth({
         countries,
         makes,
         cars: carList,
+        favorites
       }
     }
   }

@@ -1,7 +1,8 @@
 import { GetServerSidePropsContext } from 'next';
-import { Car, Wishlist } from '../types';
+import { Car, FavoriteCar } from '../types';
 import { getPassageUserId } from './passage';
 import { getSupabase } from './supabase';
+import { getCookie } from 'cookies-next';
 
 export const getCountries = async (): Promise<
   Car[]
@@ -99,17 +100,34 @@ export const getCarList = async ( {country, make } : GetCarListProps): Promise<
   return data || [];
 };
 
-export const getWishLists = async (ctx: GetServerSidePropsContext): Promise<
-  Wishlist[]
+export const getFavoriteCars = async (ctx: GetServerSidePropsContext): Promise<
+FavoriteCar[]
 > => {
-  const userId = await getPassageUserId(ctx);
+  const authToken = getCookie('psg_auth_token', { req: ctx.req, res: ctx.res }) as string;
+
+  const userId = await getPassageUserId(authToken);
 
   if (!userId) throw new Error("user not found")
 
   const supabase = getSupabase(userId)
 
   const { data, error } = await supabase
-    .from('wishlists')
+    .from('favorites')
+    .select(`
+      id,
+      cars!inner(
+        id,
+        name,
+        makers!inner(
+          id,
+          name,
+          countries!inner(
+            id,
+            name
+          )
+        )
+      )
+    `)
 
   if (error) {
     console.log(error.message);
@@ -119,3 +137,41 @@ export const getWishLists = async (ctx: GetServerSidePropsContext): Promise<
   return data || [];
 };
 
+// export const saveFavoriteCar = async (ctx: GetServerSidePropsContext): Promise<> => {
+//   const { data, error } = await supabase
+//   .from('notes')
+//   .insert([
+//       { note: 'I need to not forget this' },
+//   ]);
+
+// }
+
+export const getCar = async (name: string): Promise<
+  Car
+> => {
+  const supabase = getSupabase()
+
+  const { data, error } = await supabase
+    .from('cars')
+    .select(`
+      id,
+      name,
+      makers!inner(
+        id,
+        name,
+        countries!inner(
+          id,
+          name
+        )
+      )
+    `)
+    .eq('name', name)
+    .single()
+
+  if (error) {
+    console.log(error.message);
+    throw error;
+  }
+
+  return data;
+};

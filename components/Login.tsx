@@ -37,9 +37,7 @@ export default function Login({ appId }: { appId: string }) {
   useEffect(() => {
     const { current } = ref;
 
-    if (current != null) {
-      current.onSuccess = onSuccess;
-    }
+    current!.onSuccess = onSuccess;
   }, [ref]);
 
   return (

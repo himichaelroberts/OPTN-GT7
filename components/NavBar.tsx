@@ -18,9 +18,8 @@ import BackgroundLetterAvatar from '../components/BackgroundLetterAvatar';
 
 const pages = [
   {
-    name: 'Wishlist',
-    path: '/wishlist',
-    protected: true
+    name: 'Favorites',
+    path: '/favorites',
   }
 ];
 

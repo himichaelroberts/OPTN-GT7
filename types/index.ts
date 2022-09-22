@@ -22,6 +22,7 @@ export interface Car {
   makers: Make;
 }
 
-export interface Wishlist {
+export interface FavoriteCar {
   id: string;
+  cars: Car;
 }

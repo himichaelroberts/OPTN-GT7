@@ -2,7 +2,7 @@ import jwtDecode, { JwtPayload } from 'jwt-decode';
 import jwt from "jsonwebtoken";
 import jwkToPem, { RSA } from "jwk-to-pem";
 import { GetServerSidePropsContext } from 'next';
-import { getCookie } from 'cookies-next';
+
 
 interface authResult {
   redirect_url: string;
@@ -38,15 +38,9 @@ export interface JWK {
 
 const AUTH_CACHE: AUTHCACHE = {};
 
-export const getPassageUserId = async (ctx: GetServerSidePropsContext) => {
+export const getPassageUserId = async (authToken: string) => {
   if (!process.env.NEXT_PUBLIC_PASSAGE_APP_ID) {
     return undefined;
-  }
-
-  const authToken = getCookie('psg_auth_token', { req: ctx.req, res: ctx.res }) as string;
-
-  if (!authToken) {
-    return null
   }
 
   try {
