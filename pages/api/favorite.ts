@@ -25,6 +25,18 @@ async function removeFavorite(supabase: SupabaseClient, carId: string, userId: s
     .match({ car_id: carId, user_id: userId })
 }
 
+async function getUser(supabase: SupabaseClient, userId: string) {
+  return supabase
+    .from('users')
+    .select('id')
+    .eq('passage_id', userId)
+    .single()
+}
+
+type SupabaseUser = {
+  id: string;
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
@@ -43,11 +55,15 @@ export default async function handler(
 
   const supabase = getSupabase(userId)
 
-  const userUuid = '21a9ec5b-5d00-42c6-a383-9fd2b4eda7a2';
+  const { data: user, error: userError }:{ data: any; error: any; } = await getUser(supabase, userId)
 
+  if (userError || !user) {
+    res.status(405).send({ message: 'User Not found' })
+    return
+  }
 
   if (req.method === 'POST') {
-    const { error } = await insertFavorite(supabase, req.body.car_id, userUuid)
+    const { error } = await insertFavorite(supabase, req.body.car_id, user.id)
 
     if (error) {
       res.status(400).send({ message: 'Failed to insert data' })
@@ -55,7 +71,7 @@ export default async function handler(
   }
 
   if (req.method === 'DELETE') {
-    const { error } = await removeFavorite(supabase, req.body.car_id, userUuid)
+    const { error } = await removeFavorite(supabase, req.body.car_id, user.id)
 
     if (error) {
       res.status(400).send({ message: 'Failed to remove favorite' })
