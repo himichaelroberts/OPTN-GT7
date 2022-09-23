@@ -32,7 +32,7 @@ export default function CarCard({ car, favorited, handleFavoriteAction }: CarCar
           <CardMedia
             component="img"
             height="175"
-            image={`https://jwwfejqbidkztahfvrlv.supabase.co/storage/v1/object/public/cars/${encodeURI(`${car.makers.name} ${car.name}`)}.webp`}
+            image={`https://jwwfejqbidkztahfvrlv.supabase.co/storage/v1/object/public/cars/${encodeURI(car.makers.name)}/${encodeURI(car.name)}.webp`}
             alt={`${car.makers.name} ${car.name}`}
             onError={handleImageError}
           />
